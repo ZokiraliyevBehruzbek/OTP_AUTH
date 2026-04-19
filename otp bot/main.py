@@ -8,20 +8,19 @@ from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.memory import MemoryStorage
 
-# 🔐 Token
+
 BOT_TOKEN = "8344336191:AAFrAj60650Jx1p8ayNlByI40rfnZztUc7Y"
 
 API_URL = "http://localhost:8000/auth/send-otp/"
-# http://127.0.0.1:8000/swagger/
-# 
-# Logging
+
+
 logging.basicConfig(level=logging.INFO)
 
-# Bot init
+
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 
-# 📱 Contact button
+
 contact_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="📱 Send phone number", request_contact=True)]
@@ -29,16 +28,16 @@ contact_keyboard = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
-# 🔹 /start handler
+
 @dp.message(CommandStart())
 async def start_handler(message: Message, state: FSMContext, command):
-    session_id = command.args  # payload
+    session_id = command.args
 
     if not session_id:
         await message.answer("Invalid link ❌")
         return
 
-    # session saqlaymiz
+
     await state.update_data(session_id=session_id)
 
     await message.answer(
@@ -46,7 +45,7 @@ async def start_handler(message: Message, state: FSMContext, command):
         reply_markup=contact_keyboard
     )
 
-# 🔹 Contact handler
+
 @dp.message(F.contact)
 async def contact_handler(message: Message, state: FSMContext):
     data = await state.get_data()
@@ -70,17 +69,17 @@ async def contact_handler(message: Message, state: FSMContext):
                 }
             ) as response:
 
-                # 🔥 HAR DOIM text ni ko‘ramiz
+                
                 text = await response.text()
                 print("RESPONSE STATUS:", response.status)
                 print("RESPONSE TEXT:", text)
 
-                # ❗ agar error bo‘lsa
+               
                 if response.status != 200:
                     await message.answer(f"❌ Backend error: {response.status}")
                     return
 
-                # 🔥 keyin JSON parse qilamiz
+                
                 try:
                     result = await response.json()
                 except:
@@ -97,12 +96,11 @@ async def contact_handler(message: Message, state: FSMContext):
         await message.answer(f"⚠️ Error: {e}")
         print("ERROR:", e)
         
-# 🔹 Fallback
+
 @dp.message()
 async def fallback(message: Message):
     await message.answer("Please use /start and send phone number 📱")
 
-# 🚀 Run bot
 async def main():
     await dp.start_polling(bot)
 
